@@ -18,22 +18,18 @@ enum Theme:String, CaseIterable, Identifiable {
     case nature = "Nature"
     case food = "Food"
     
-    var systemIconName:String{
-        "return"
-    }
-    
     var id: String { self.rawValue }
     
-    var emojis:[Emoji]{
+    var emojis:[String]{
         switch self {
         case .food:
-            return ["🍕", "🍔", "🍣", "🍎", "🍫", "🍩", "🍉", "🍪", "🍌", "🥑","🍕", "🍔", "🍣", "🍎", "🍫", "🍩", "🍉", "🍪", "🍌", "🥑"].map { Emoji(symbol: $0) }.shuffled()
+            return ["🍕", "🍔", "🍣", "🍎", "🍫", "🍩", "🍉", "🍪", "🍌", "🥑"]
         case .animals:
-            return ["🐶", "🐱", "🐼", "🐨", "🐯", "🦊", "🐸", "🦁", "🐰", "🦄","🐶", "🐱", "🐼", "🐨", "🐯", "🦊", "🐸", "🦁", "🐰", "🦄"].map { Emoji(symbol: $0) }.shuffled()
+            return ["🐶", "🐱", "🐼", "🐨", "🐯", "🦊", "🐸", "🦁", "🐰", "🦄"]
         case .travel:
-            return ["✈️", "🗺️", "🚀", "🚗", "🏖️", "🌍", "🏕️", "🚢", "🗽", "🏔️","✈️", "🗺️", "🚀", "🚗", "🏖️", "🌍", "🏕️", "🚢", "🗽", "🏔️"].map { Emoji(symbol: $0) }.shuffled()
+            return ["✈️", "🗺️", "🚀", "🚗", "🏖️", "🌍", "🏕️", "🚢", "🗽", "🏔️"]
         case .nature:
-            return ["🌳", "🌸", "🌞", "🌧️", "🌈", "🌼", "🍂", "🌲", "🍁", "🍃","🌳", "🌸", "🌞", "🌧️", "🌈", "🌼", "🍂", "🌲", "🍁", "🍃"].map { Emoji(symbol: $0) }.shuffled()
+            return ["🌳", "🌸", "🌞", "🌧️", "🌈", "🌼", "🍂", "🌲", "🍁", "🍃"]
         }
     }
     
@@ -62,6 +58,14 @@ enum Theme:String, CaseIterable, Identifiable {
             return .gray
         }
     }
+    
+    func randomEmojiPairs() -> [Emoji] {
+        let baseEmojis = self.emojis
+        let numberOfPairs = Int.random(in: 2...baseEmojis.count)
+        let selectedEmojis = Array(baseEmojis.prefix(numberOfPairs))
+        var duplicatedEmojis = selectedEmojis + selectedEmojis
+        return duplicatedEmojis.map { Emoji(symbol: $0) }.shuffled()
+    }
 }
 
 struct ContentView: View {
@@ -73,6 +77,7 @@ struct ContentView: View {
     var body: some View {
         VStack{
             Text("Memorize")
+            Text("\(selectedTheme.randomEmojiPairs().count)")
                 .font(.largeTitle)
             ScrollView{
                 cards
@@ -85,7 +90,8 @@ struct ContentView: View {
     
     var cards:some View{
         LazyVGrid(columns:[GridItem(.adaptive(minimum: 120))]){
-            ForEach(selectedTheme.emojis){ emoji in
+            
+            ForEach(selectedTheme.randomEmojiPairs()){ emoji in
                 CardView(content: emoji.symbol)
                     .aspectRatio(2/3, contentMode: .fit)
             }
