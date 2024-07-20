@@ -7,63 +7,123 @@
 
 import SwiftUI
 
+struct Emoji: Identifiable {
+    let id = UUID()
+    let symbol: String
+}
+
+enum Theme:String, CaseIterable, Identifiable {
+    case animals = "Animals"
+    case travel = "Travel"
+    case nature = "Nature"
+    case food = "Food"
+    
+    var systemIconName:String{
+        "return"
+    }
+    
+    var id: String { self.rawValue }
+    
+    var emojis:[Emoji]{
+        switch self {
+        case .food:
+            return ["🍕", "🍔", "🍣", "🍎", "🍫", "🍩", "🍉", "🍪", "🍌", "🥑","🍕", "🍔", "🍣", "🍎", "🍫", "🍩", "🍉", "🍪", "🍌", "🥑"].map { Emoji(symbol: $0) }.shuffled()
+        case .animals:
+            return ["🐶", "🐱", "🐼", "🐨", "🐯", "🦊", "🐸", "🦁", "🐰", "🦄","🐶", "🐱", "🐼", "🐨", "🐯", "🦊", "🐸", "🦁", "🐰", "🦄"].map { Emoji(symbol: $0) }.shuffled()
+        case .travel:
+            return ["✈️", "🗺️", "🚀", "🚗", "🏖️", "🌍", "🏕️", "🚢", "🗽", "🏔️","✈️", "🗺️", "🚀", "🚗", "🏖️", "🌍", "🏕️", "🚢", "🗽", "🏔️"].map { Emoji(symbol: $0) }.shuffled()
+        case .nature:
+            return ["🌳", "🌸", "🌞", "🌧️", "🌈", "🌼", "🍂", "🌲", "🍁", "🍃","🌳", "🌸", "🌞", "🌧️", "🌈", "🌼", "🍂", "🌲", "🍁", "🍃"].map { Emoji(symbol: $0) }.shuffled()
+        }
+    }
+    
+    var iconName: String {
+        switch self {
+        case .food:
+            return "leaf"
+        case .animals:
+            return "hare"
+        case .travel:
+            return "airplane"
+        case .nature:
+            return "tree"
+        }
+    }
+    
+    var themeColor:Color{
+        switch self {
+        case .food:
+            return .cyan
+        case .animals:
+            return .pink
+        case .travel:
+            return .purple
+        case .nature:
+            return .gray
+        }
+    }
+}
+
 struct ContentView: View {
-    let emojis = ["👻","😘","😁","😇","👻","😘","😁","😇","👻","😘","😁","😇"]
+    
+    @State private var selectedTheme:Theme = .animals
+    
     @State var cardCount = 4
     
     var body: some View {
         VStack{
+            Text("Memorize")
+                .font(.largeTitle)
             ScrollView{
                 cards
             }
             Spacer()
-            cardCountAdjusters
+            ThemeButtons
         }
         .padding()
     }
     
-    func cardCountAdjuster(by offset:Int,symbol:String) -> some View{
-        Button(action: {
-            cardCount += offset
-            
-        }, label: {
-            Image(systemName:symbol)
-        })
-        .disabled(cardCount + offset < 1 || cardCount + offset > emojis.count)
-    }
-    
     var cards:some View{
-        
         LazyVGrid(columns:[GridItem(.adaptive(minimum: 120))]){
-            ForEach(0..<cardCount,id:\.self){ index in
-                CardView(content: emojis[index])
+            ForEach(selectedTheme.emojis){ emoji in
+                CardView(content: emoji.symbol)
                     .aspectRatio(2/3, contentMode: .fit)
             }
         }
-        .foregroundColor(.orange)
+        .foregroundColor(selectedTheme.themeColor)
     }
     
-    var cardCountAdjusters: some View{
+    var ThemeButtons: some View{
         HStack{
-            cardAdder
-            Spacer()
-            cardRemover
+            emojiThemeButton
         }
-        .imageScale(.large)
-        .font(.largeTitle)
+        .imageScale(.small)
+        .font(.title)
+       
     }
     
-    var cardAdder: some View{
-        cardCountAdjuster(by: 1, symbol: "rectangle.stack.fill.badge.plus")
-    }
-    
-    var cardRemover: some View{
-        cardCountAdjuster(by: -1, symbol: "rectangle.stack.badge.minus.fill")
+    var emojiThemeButton: some View{
+        ForEach(Theme.allCases) { theme in
+            Button(action: {
+                selectedTheme = theme
+            }) {
+                VStack {
+                    Image(systemName: theme.iconName)
+                      
+                    Text(theme.rawValue)
+                        .font(.body)
+                }
+                .cornerRadius(10)
+                .padding(2)
+            }
+            .frame(maxWidth: .infinity)
+            .aspectRatio(1, contentMode: .fit)
+        }
     }
 }
 
 struct CardView:View {
-    @State var isFaceUp = true
+    @State var isFaceUp = false
     let content:String
     var body: some View {
         ZStack{//trailing closure syntax
